@@ -1249,43 +1249,6 @@ No passwords, API keys, tokens, or other secrets should be committed to the repo
 
 ---
 
-## 🖼️ Screenshots
-
-Screenshots are currently stored inside:
-
-```text
-screenshort/
-```
-
-Current screenshot files:
-
-```text
-dashboard.jpg.jpeg
-home.jpg.jpeg
-location.jpg.jpeg
-login.jpg.jpeg
-```
-
-Example GitHub Markdown:
-
-```markdown
-![Home](screenshort/home.jpg.jpeg)
-```
-
-```markdown
-![Dashboard](screenshort/dashboard.jpg.jpeg)
-```
-
-```markdown
-![Login](screenshort/login.jpg.jpeg)
-```
-
-```markdown
-![Location](screenshort/location.jpg.jpeg)
-```
-
----
-
 ## 🎓 Academic Relevance
 
 This project demonstrates the practical application of multiple Computer Science concepts.
@@ -1366,7 +1329,7 @@ Contributions and suggestions are welcome.
 ### Clone the Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/sanyamsharma062/Multi-Disease-Prediction
 cd Multi-Disease-Prediction-main
 ```
 
