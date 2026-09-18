@@ -1,71 +1,114 @@
 import pickle
+from pathlib import Path
+
 import numpy as np
 from fastapi import FastAPI, HTTPException
-from pydantic import RootModel,field_validator 
+from pydantic import RootModel, field_validator
 from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI()
 
-#Cors middleware
+
+# ==========================================
+# CORS Middleware
+# ==========================================
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins = ["https://localhost:5173"],
-    allow_credentials = True,
-    allow_methods = ["*"],
-    allow_headers = ["*"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-#validation classess
-class diabeteshInput(RootModel[list[float]]):
+
+# ==========================================
+# Input Validation Classes
+# ==========================================
+
+class DiabetesInput(RootModel[list[float]]):
+
     @field_validator("root")
     @classmethod
-    def validate_data(cls,data):
+    def validate_data(cls, data):
         if len(data) != 8:
-            raise ValueError("Diabetes prediction requries exactly 8 features.")
-        return data 
+            raise ValueError(
+                "Diabetes prediction requires exactly 8 features."
+            )
+        return data
 
-class heartInput(RootModel[list[float]]):
+
+class HeartInput(RootModel[list[float]]):
+
     @field_validator("root")
     @classmethod
-    def validate_data(cls,data):
+    def validate_data(cls, data):
         if len(data) != 13:
-            raise ValueError("Heart disease prediction requries exactly 13 features.")
+            raise ValueError(
+                "Heart disease prediction requires exactly 13 features."
+            )
         return data
 
-class parkinsonsInput(RootModel[list[float]]):
+
+class ParkinsonsInput(RootModel[list[float]]):
+
     @field_validator("root")
     @classmethod
-    def validate_data(cls,data):
+    def validate_data(cls, data):
         if len(data) != 22:
-            raise ValueError("Parkinsons prediction requries exactly 22 features.")
+            raise ValueError(
+                "Parkinsons prediction requires exactly 22 features."
+            )
         return data
 
-# load diabetes model
+
+# ==========================================
+# Load Trained Models
+# ==========================================
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+MODEL_DIR = BASE_DIR / "models"
+
+
 diabetes_model = pickle.load(
-    open("models/diabetes_model.sav", "rb")
+    open(MODEL_DIR / "diabetes_model.sav", "rb")
 )
 
-# load heart model
+
 heart_disease_model = pickle.load(
-    open("models/heart_disease_model.sav", "rb")
+    open(MODEL_DIR / "heart_disease_model.sav", "rb")
 )
 
-#load parkinson model
+
 parkinsons_model = pickle.load(
-    open("models/parkinsons_model.sav",
-    "rb")
+    open(MODEL_DIR / "parkinsons_model.sav", "rb")
 )
+
+
+# ==========================================
+# Home Endpoint
+# ==========================================
 
 @app.get("/")
 def home():
-    return {"message": "Multi Disease Prediction API is running"}
+    return {
+        "message": "Multi Disease Prediction API is running"
+    }
 
-#Diabetes Function(endpoint)
+
+# ==========================================
+# Diabetes Prediction
+# ==========================================
+
 @app.post("/prediction/diabetes")
-def predict_diabetes(data: diabeteshInput):
+def predict_diabetes(data: DiabetesInput):
+
     try:
         input_data = np.asarray(data.root)
-
         input_data = input_data.reshape(1, -1)
 
         prediction = diabetes_model.predict(input_data)
@@ -76,21 +119,26 @@ def predict_diabetes(data: diabeteshInput):
             result = "Not Diabetic"
 
         return {
-        "prediction": int(prediction[0]),
-        "result": result
+            "prediction": int(prediction[0]),
+            "result": result
         }
-    except Exception:
-            raise HTTPException(
-                status_code=500,
-                detail="Diabetes prediction failed. Please try again."
-            )
 
-#Heart Function(endpoint)
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="Diabetes prediction failed. Please try again."
+        )
+
+
+# ==========================================
+# Heart Disease Prediction
+# ==========================================
+
 @app.post("/prediction/heart")
-def predict_heart(data: heartInput):
+def predict_heart(data: HeartInput):
+
     try:
         input_data = np.asarray(data.root)
-
         input_data = input_data.reshape(1, -1)
 
         prediction = heart_disease_model.predict(input_data)
@@ -104,31 +152,39 @@ def predict_heart(data: heartInput):
             "prediction": int(prediction[0]),
             "result": result
         }
-    except Exception:
-            raise HTTPException(
-                status_code=500,
-                detail="Heart disease prediction failed. Please try again."
-            )
 
-#Parkinsons Function(endpoint)
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="Heart disease prediction failed. Please try again."
+        )
+
+
+# ==========================================
+# Parkinson's Prediction
+# ==========================================
+
 @app.post("/prediction/parkinsons")
-def predict_parkinsons(data: parkinsonsInput):
+def predict_parkinsons(data: ParkinsonsInput):
+
     try:
         input_data = np.asarray(data.root)
-
-        input_data = input_data.reshape(1,-1)
+        input_data = input_data.reshape(1, -1)
 
         prediction = parkinsons_model.predict(input_data)
+
         if prediction[0] == 1:
             result = "Parkinsons Disease"
         else:
             result = "Not Parkinsons Disease"
-        return{
-            "prediction":int(prediction[0]),
-            "result":result
+
+        return {
+            "prediction": int(prediction[0]),
+            "result": result
         }
+
     except Exception:
-            raise HTTPException(
-                status_code=500,
-                detail="Parkinsons prediction failed. Please try again."
-            )
+        raise HTTPException(
+            status_code=500,
+            detail="Parkinsons prediction failed. Please try again."
+        )
